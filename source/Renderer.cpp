@@ -34,12 +34,11 @@ void Renderer::Render(Scene* pScene) const
 			const float cx = (2 * (static_cast<float>(px) + 0.5f) / static_cast<float>(m_Width) - 1) * (static_cast<float>(m_Width) / static_cast<float>(m_Height));
 			const float cy = 1 - (2 * static_cast<float>(py) + 0.5f) / static_cast<float>(m_Height);
 
-
 			Vector3 rayDirection = cx * camera.right + cy * camera.up + camera.forward;
 			rayDirection.Normalize();
 
 			Ray hitRay{ {0,0,0}, rayDirection };
-			ColorRGB finalColor{ rayDirection.x, rayDirection.y, rayDirection.z };
+			ColorRGB finalColor{};
 
 			Ray viewRay{ {0,0,0}, rayDirection };
 			HitRecord closestHit{};
@@ -48,10 +47,10 @@ void Renderer::Render(Scene* pScene) const
 
 			if (closestHit.didHit)
 			{
-				finalColor = materials[closestHit.materialIndex]->Shade();
+			//	finalColor = materials[closestHit.materialIndex]->Shade();
 
-				/*const float scaled_t = (closestHit.t - 50.f) / 40.f;
-				finalColor = { scaled_t, scaled_t, scaled_t };*/
+				const float scaled_t = (closestHit.t - 50.f) / 40.f;
+				finalColor = { scaled_t, scaled_t, scaled_t };
 			}
 
 			//Update Color in Buffer

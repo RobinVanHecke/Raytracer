@@ -15,28 +15,46 @@ namespace dae
 		{
 			//todo W1
 
+			const Vector3 sphereToRay = ray.origin - sphere.origin;
+
 			const float a = Vector3::Dot(ray.direction, ray.direction);
-			const float b = 2.f * Vector3::Dot(ray.origin, ray.direction);
-			const float c = Vector3::Dot(ray.origin, ray.origin) - sphere.radius * sphere.radius;
+			const float b = 2.f * Vector3::Dot(ray.direction, sphereToRay);
+			const float c = Vector3::Dot(sphereToRay, sphereToRay) - sphere.radius * sphere.radius;
 
-			if (const float discriminant = b * b - 4.f * a * c; discriminant > 0)
+			if (const float discriminant = b * b - 4.f * a * c; discriminant >= 0)
 			{
-				const float t = (-b - sqrt(discriminant)) / (2.f * a);
+				const float t0 = (-b - sqrt(discriminant)) / (2.f * a);
+				const float t1 = (-b + sqrt(discriminant)) / (2.f * a);
 
-				if (!ignoreHitRecord)
+				if (t0 >= ray.min && t0 <= ray.max)
 				{
-					hitRecord.origin = ray.origin + ray.direction * t;
-					hitRecord.didHit = true;
-					hitRecord.materialIndex = sphere.materialIndex;
-					hitRecord.t = t;
-					hitRecord.normal = Vector3{ (hitRecord.origin - sphere.origin) / sphere.radius};
-
-					return true;
+					if (!ignoreHitRecord)
+					{
+						hitRecord.origin = ray.origin + ray.direction * t0;
+						hitRecord.didHit = true;
+						hitRecord.materialIndex = sphere.materialIndex;
+						hitRecord.t = t0;
+						hitRecord.normal = Vector3{ (hitRecord.origin - sphere.origin) / sphere.radius };
+					}
 				}
+
+				else if (t0 < ray.min)
+				{
+					if (!ignoreHitRecord)
+					{
+						hitRecord.origin = ray.origin + ray.direction * t1;
+						hitRecord.didHit = true;
+						hitRecord.materialIndex = sphere.materialIndex;
+						hitRecord.t = t1;
+						hitRecord.normal = Vector3{ (hitRecord.origin - sphere.origin) / sphere.radius };
+					}
+				}
+
+				return true;
 			}
 
 
-			assert(false && "No Implemented Yet!");
+			//assert(false && "No Implemented Yet!");
 			return false;
 		}
 
