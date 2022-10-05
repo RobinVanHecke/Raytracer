@@ -1,4 +1,7 @@
 #include "Scene.h"
+
+#include <iostream>
+
 #include "Utils.h"
 #include "Material.h"
 
@@ -30,15 +33,32 @@ namespace dae {
 	{
 		//todo W1
 
-		std::vector<HitRecord> tempHitRecords;
+	/*	std::vector<HitRecord> tempHitRecords;*/
+
+		float tempT = 0;
 		for (const auto &sphere : m_SphereGeometries)
 		{
-			HitRecord tempHitRecord;
-			GeometryUtils::HitTest_Sphere(sphere, ray, tempHitRecord);
-			tempHitRecords.emplace_back(tempHitRecord);
+			GeometryUtils::HitTest_Sphere(sphere, ray, closestHit);
+
+			if (closestHit.didHit)
+			{
+				if (closestHit.t > tempT)
+				{
+					closestHit.t = tempT;
+					std::cout << "1";
+				}
+				else
+				{
+					tempT = closestHit.t;
+					std::cout << "2";
+				}
+				
+			}
+			
+			
 		}
 
-		float tempT{0};
+		/*float tempT{0};
 		for (const auto &tempHitRecord : tempHitRecords)
 		{
 			if(tempT < tempHitRecord.t)
@@ -46,7 +66,7 @@ namespace dae {
 				tempT = tempHitRecord.t;
 				closestHit = tempHitRecord;
 			}
-		}
+		}*/
 
 		//assert(false && "No Implemented Yet!");
 	}
