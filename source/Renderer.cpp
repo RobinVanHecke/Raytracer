@@ -36,8 +36,8 @@ void Renderer::Render(Scene* pScene) const
 
 			Vector3 rayDirection = cx * camera.right + cy * camera.up + camera.forward;
 			rayDirection.Normalize();
-
-			Ray viewRay{ {0, 0, 0}, rayDirection };
+			
+			Ray viewRay{ camera.origin, rayDirection };
 			ColorRGB finalColor{};
 			HitRecord closestHit{};
 			pScene->GetClosestHit(viewRay, closestHit);
