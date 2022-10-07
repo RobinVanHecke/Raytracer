@@ -35,7 +35,6 @@ namespace dae
 						hitRecord.materialIndex = sphere.materialIndex;
 						hitRecord.t = t0;
 						hitRecord.normal = Vector3{ (hitRecord.origin - sphere.origin) / sphere.radius };
-						
 					}
 
 					else if (t0 < ray.min)
@@ -45,14 +44,10 @@ namespace dae
 						hitRecord.materialIndex = sphere.materialIndex;
 						hitRecord.t = t1;
 						hitRecord.normal = Vector3{ (hitRecord.origin - sphere.origin) / sphere.radius };
-						
 					}
 				}
-				
-
 				return true;
 			}
-
 
 			//assert(false && "No Implemented Yet!");
 			return false;
@@ -66,10 +61,26 @@ namespace dae
 #pragma endregion
 #pragma region Plane HitTest
 		//PLANE HIT-TESTS
-		inline bool HitTest_Plane(const Plane& plane, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
+		inline bool HitTest_Plane(const Plane& plane, const Ray& ray, HitRecord& hitRecord, const bool ignoreHitRecord = false)
 		{
-			//todo W1
-			assert(false && "No Implemented Yet!");
+			//todoDone W1
+
+			const float nominator{ Vector3::Dot(plane.origin - ray.origin, plane.normal) };
+			const float denominator{ Vector3::Dot(ray.direction, plane.normal) };
+			const float t{ nominator / denominator };
+
+			if (constexpr float epsilon{ 0.000001f }; t > epsilon && ignoreHitRecord == false)
+			{
+				hitRecord.normal = plane.normal;
+				hitRecord.didHit = true;
+				hitRecord.materialIndex = plane.materialIndex;
+				hitRecord.origin = ray.origin + ray.direction * t;
+				hitRecord.t = t;
+
+				return true;
+			}
+
+			//assert(false && "No Implemented Yet!");
 			return false;
 		}
 

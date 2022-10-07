@@ -36,6 +36,16 @@ namespace dae {
 		HitRecord tempHitRecord;
 		tempHitRecord.t = FLT_MAX;
 
+		for (const auto& plane : m_PlaneGeometries)
+		{
+			GeometryUtils::HitTest_Plane(plane, ray, closestHit);
+
+			if (closestHit.t < tempHitRecord.t)
+				tempHitRecord = closestHit;
+			else
+				closestHit = tempHitRecord;
+		}
+
 		for (const auto &sphere : m_SphereGeometries)
 		{
 			GeometryUtils::HitTest_Sphere(sphere, ray, closestHit);
@@ -44,7 +54,6 @@ namespace dae {
 				tempHitRecord = closestHit;
 			else
 				closestHit = tempHitRecord;
-
 		}
 
 		//assert(false && "No Implemented Yet!");
