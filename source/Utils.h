@@ -31,19 +31,19 @@ namespace dae
 					if (t0 >= ray.min && t0 <= ray.max)
 					{
 						hitRecord.origin = ray.origin + ray.direction * t0;
+						hitRecord.normal = Vector3{ (hitRecord.origin - sphere.origin) / sphere.radius };
+						hitRecord.t = t0;
 						hitRecord.didHit = true;
 						hitRecord.materialIndex = sphere.materialIndex;
-						hitRecord.t = t0;
-						hitRecord.normal = Vector3{ (hitRecord.origin - sphere.origin) / sphere.radius };
 					}
 
 					else if (t0 < ray.min)
 					{
 						hitRecord.origin = ray.origin + ray.direction * t1;
+						hitRecord.normal = Vector3{ (hitRecord.origin - sphere.origin) / sphere.radius };
+						hitRecord.t = t1;
 						hitRecord.didHit = true;
 						hitRecord.materialIndex = sphere.materialIndex;
-						hitRecord.t = t1;
-						hitRecord.normal = Vector3{ (hitRecord.origin - sphere.origin) / sphere.radius };
 					}
 				}
 				return true;
@@ -69,14 +69,16 @@ namespace dae
 			const float denominator{ Vector3::Dot(ray.direction, plane.normal) };
 			const float t{ nominator / denominator };
 
-			if (constexpr float epsilon{ 0.000001f }; t > epsilon && ignoreHitRecord == false)
+			if (constexpr float epsilon{ 0.000001f }; t > epsilon)
 			{
-				hitRecord.normal = plane.normal;
-				hitRecord.didHit = true;
-				hitRecord.materialIndex = plane.materialIndex;
-				hitRecord.origin = ray.origin + ray.direction * t;
-				hitRecord.t = t;
-
+				if (!ignoreHitRecord)
+				{
+					hitRecord.origin = ray.origin + ray.direction * t;
+					hitRecord.normal = plane.normal;
+					hitRecord.t = t;
+					hitRecord.didHit = true;
+					hitRecord.materialIndex = plane.materialIndex;
+				}
 				return true;
 			}
 

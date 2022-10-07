@@ -33,8 +33,7 @@ namespace dae {
 	{
 		//todoDone W1
 
-		HitRecord tempHitRecord;
-		tempHitRecord.t = FLT_MAX;
+		HitRecord tempHitRecord;  // t is set to FLT_MAX by default
 
 		for (const auto& plane : m_PlaneGeometries)
 		{
