@@ -29,6 +29,7 @@ namespace dae
 		SDL_Surface* m_pBuffer{};
 		uint32_t* m_pBufferPixels{};
 
+
 		int m_Width{};
 		int m_Height{};
 	};
