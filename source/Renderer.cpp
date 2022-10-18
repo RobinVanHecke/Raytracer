@@ -23,22 +23,26 @@ Renderer::Renderer(SDL_Window * pWindow) :
 
 void Renderer::Render(Scene* pScene) const
 {
-	const Camera& camera = pScene->GetCamera();
-
+	Camera& camera = pScene->GetCamera();
+		
 	auto& materials = pScene->GetMaterials();
 	auto& lights = pScene->GetLights();
+
+
+	const float aspectRatio = static_cast<float>(m_Width) / static_cast<float>(m_Height);
+	const float fov = tanf(camera.fovAngle * TO_RADIANS / 2.0f);
+
 
 	for (int px{}; px < m_Width; ++px)
 	{
 		for (int py{}; py < m_Height; ++py)
 		{
-			const float cx = (2 * (static_cast<float>(px) + 0.5f) / static_cast<float>(m_Width) - 1) * (static_cast<float>(m_Width) / static_cast<float>(m_Height));
-			const float cy = 1 - (2 * static_cast<float>(py) + 0.5f) / static_cast<float>(m_Height);
+			const float cx = (2 * (static_cast<float>(px) + 0.5f) / static_cast<float>(m_Width) - 1) * aspectRatio * fov;
+			const float cy = (1 - 2 * (static_cast<float>(py) + 0.5f) / static_cast<float>(m_Height)) * fov;
 
 			
-			//const Matrix cameraToWorld = camera.CalculateCameraToWorld();
-			//Vector3 rayDirection = cx * cameraToWorld.GetAxisX() + cy * cameraToWorld.GetAxisY() + cameraToWorld.GetAxisZ();
-			Vector3 rayDirection = cx * camera.right + cy * camera.up + camera.forward;
+			const Matrix cameraToWorld = camera.CalculateCameraToWorld();
+			Vector3 rayDirection = cx * cameraToWorld.GetAxisX() + cy * cameraToWorld.GetAxisY() + cameraToWorld.GetAxisZ();
 			rayDirection.Normalize();
 			
 			Ray viewRay{ camera.origin, rayDirection };

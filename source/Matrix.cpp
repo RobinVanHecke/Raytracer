@@ -116,21 +116,30 @@ namespace dae {
 
 	Matrix Matrix::CreateRotationX(float pitch)
 	{
-		//todo W1
+		//todoDone W1
+
+		return CreateRotation({ pitch, 0.f, 0.f });
+
 		assert(false && "Not Implemented Yet");
 		return {};
 	}
 
 	Matrix Matrix::CreateRotationY(float yaw)
 	{
-		//todo W1
+		//todoDone W1
+
+		return CreateRotation({ 0.f, yaw, 0.f });
+
 		assert(false && "Not Implemented Yet");
 		return {};
 	}
 
 	Matrix Matrix::CreateRotationZ(float roll)
 	{
-		//todo W1
+		//todoDone W1
+
+		return CreateRotation({ 0.f, 0.f, roll });
+
 		assert(false && "Not Implemented Yet");
 		return {};
 	}
@@ -138,6 +147,7 @@ namespace dae {
 	Matrix Matrix::CreateRotation(const Vector3& r)
 	{
 		//todo W1
+
 		assert(false && "Not Implemented Yet");
 		return {};
 	}

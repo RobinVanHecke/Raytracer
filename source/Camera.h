@@ -1,5 +1,6 @@
 #pragma once
 #include <cassert>
+#include <iostream>
 #include <SDL_keyboard.h>
 #include <SDL_mouse.h>
 
@@ -30,6 +31,9 @@ namespace dae
 		float totalPitch{0.f};
 		float totalYaw{0.f};
 
+		const float movementSpeed{10.f};
+		const float rotationSpeed{ 1.f };
+
 		Matrix cameraToWorld{};
 
 
@@ -37,8 +41,8 @@ namespace dae
 		{
 			//todoDone: W2
 
-			Vector3 tempRight = Vector3::Cross(origin, forward).Normalized();
-			Vector3 tempUp = Vector3::Cross(forward, right).Normalized();
+			Vector3 tempRight = Vector3::Cross(up, forward).Normalized();
+			Vector3 tempUp = Vector3::Cross(forward, tempRight).Normalized();
 
 			Matrix resultMatrix{
 				{tempRight, 0},
@@ -60,10 +64,32 @@ namespace dae
 			//Keyboard Input
 			const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
 
+			if (pKeyboardState[SDL_SCANCODE_W])
+				origin.z += movementSpeed * deltaTime;
+			else if (pKeyboardState[SDL_SCANCODE_S])
+				origin.z -= movementSpeed * deltaTime;
+
+			if (pKeyboardState[SDL_SCANCODE_A])
+				origin.x -= movementSpeed * deltaTime;
+			else if (pKeyboardState[SDL_SCANCODE_D])
+				origin.x += movementSpeed * deltaTime;
+
 
 			//Mouse Input
 			int mouseX{}, mouseY{};
 			const uint32_t mouseState = SDL_GetRelativeMouseState(&mouseX, &mouseY);
+
+			if (mouseState == SDL_BUTTON(1))
+			{
+				std::cout << "LMB\n";
+			}
+
+			if (mouseState == SDL_BUTTON(3))
+			{
+				std::cout << "RMB\n";
+			}
+			
+			
 
 			//todo: W2
 			//assert(false && "Not Implemented Yet");
