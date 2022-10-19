@@ -116,7 +116,7 @@ namespace dae {
 
 	Matrix Matrix::CreateRotationX(float pitch)
 	{
-		//todoDone W1
+		//todo W1
 
 		return CreateRotation({ pitch, 0.f, 0.f });
 
@@ -126,7 +126,7 @@ namespace dae {
 
 	Matrix Matrix::CreateRotationY(float yaw)
 	{
-		//todoDone W1
+		//todo W1
 
 		return CreateRotation({ 0.f, yaw, 0.f });
 
@@ -136,9 +136,15 @@ namespace dae {
 
 	Matrix Matrix::CreateRotationZ(float roll)
 	{
-		//todoDone W1
+		//todo W1
 
-		return CreateRotation({ 0.f, 0.f, roll });
+		return Matrix
+		{
+			{cosf(roll), sinf(roll), 0, 0},
+			{-sinf(-roll), cosf(roll), 0, 0},
+			{0,0,1,0},
+			{0,0,0,1}
+		};
 
 		assert(false && "Not Implemented Yet");
 		return {};
