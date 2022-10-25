@@ -114,41 +114,38 @@ namespace dae {
 		return { Vector3::UnitX, Vector3::UnitY, Vector3::UnitZ, t };
 	}
 
-	Matrix Matrix::CreateRotationX(float pitch)
+	Matrix Matrix::CreateRotationX(const float pitch)
 	{
 		//todoDone W1
 
-		return Matrix
-		{
-			{1, 0, 0, 0},
-			{0,cosf(pitch), -sinf(pitch), 0},
+		return{
+			{1,0,0,0},
+			{0,cosf(pitch),-sinf(pitch),0},
 			{0,sinf(pitch),cosf(pitch),0},
 			{0,0,0,1}
 		};
 	}
 
-	Matrix Matrix::CreateRotationY(float yaw)
+	Matrix Matrix::CreateRotationY(const float yaw)
 	{
 		//todoDone W1
 
-		return Matrix
-		{
-			{cosf(yaw), 0, sinf(yaw), 0},
-			{0,0, 1, 0},
+		return{
+			{cosf(yaw),0,sinf(yaw),0},
+			{0,1,0,0},
 			{-sinf(yaw),0,cosf(yaw),0},
 			{0,0,0,1}
 		};
 	}
 
-	Matrix Matrix::CreateRotationZ(float roll)
+	Matrix Matrix::CreateRotationZ(const float roll)
 	{
 		//todoDone W1
 
-		return Matrix
-		{
-			{cosf(roll), sinf(roll), 0, 0},
-			{-sinf(roll), cosf(roll), 0, 0},
-			{0,0,1,0},
+		return{
+			{cosf(roll),sinf(roll),0,0},
+			{-sinf(roll),cosf(roll),0,0},
+			{0 ,0,1,0},
 			{0,0,0,1}
 		};
 	}
@@ -157,7 +154,7 @@ namespace dae {
 	{
 		//todoDone W1
 
-		return Matrix{ CreateRotationX(r.x) * CreateRotationY(r.y) * CreateRotationZ(r.z) };
+		return { CreateRotationX(r.x) * CreateRotationY(r.y) * CreateRotationZ(r.z) };
 	}
 
 	Matrix Matrix::CreateRotation(float pitch, float yaw, float roll)
