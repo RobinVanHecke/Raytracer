@@ -168,14 +168,14 @@ namespace dae {
 		const unsigned char matId_Solid_Green = AddMaterial(new Material_SolidColor{ colors::Green });
 		const unsigned char matId_Solid_Magenta = AddMaterial(new Material_SolidColor{ colors::Magenta });
 
-		//Plane
+		////Plane
 		AddPlane({ -5.f,0.f,0.f }, { 1.f,0.f,0.f }, matId_Solid_Green);
 		AddPlane({ 5.f,0.f,0.f }, { -1.f,0.f,0.f }, matId_Solid_Green);
 		AddPlane({ 0.f,0.f,0.f }, { 0.f,1.f,0.f }, matId_Solid_Yellow);
 		AddPlane({ 0.f,10.f,0.f }, { 0.f,-1.f,0.f }, matId_Solid_Yellow);
 		AddPlane({ 0.f,0.f,10.f }, { 0.f,0.f,-1.f }, matId_Solid_Magenta);
 
-		//Spheres
+		////Spheres
 		AddSphere({ -1.75f,1.f,0.f }, .75f, matId_Solid_Red);
 		AddSphere({ 0.f,1.f,0.f }, .75f, matId_Solid_Blue);
 		AddSphere({ 1.75f,1.f,0.f }, .75f, matId_Solid_Red);
@@ -183,7 +183,7 @@ namespace dae {
 		AddSphere({ 0.f,3.f,0.f }, .75f, matId_Solid_Red);
 		AddSphere({ 1.75f,3.f,0.f }, .75f, matId_Solid_Blue);
 
-		//Light
+		////Light
 		AddPointLight({ 0.f,5.f,-5.f }, 70.f, colors::White);
 	}
 #pragma endregion

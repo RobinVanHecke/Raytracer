@@ -21,17 +21,16 @@ namespace dae
 
 
 		Vector3 origin{};
-		float fovAngle{90.f};
+		float fovAngle{ 90.f };
 
-		//Vector3 forward{0.266f, -0.453f, 0.860f};
 		Vector3 forward{ Vector3::UnitZ };
-		Vector3 up{Vector3::UnitY};
-		Vector3 right{Vector3::UnitX};
+		Vector3 up{ Vector3::UnitY };
+		Vector3 right{ Vector3::UnitX };
 
-		float totalPitch{0.f};
-		float totalYaw{0.f};
+		float totalPitch{ 0.f };
+		float totalYaw{ 0.f };
 
-		const float movementSpeed{10.f};
+		const float movementSpeed{ 10.f };
 		const float rotationSpeed{ 1.f };
 
 		Matrix cameraToWorld{};
@@ -41,23 +40,21 @@ namespace dae
 		{
 			//todoDone: W2
 
-			Vector3 tempRight = Vector3::Cross(up, forward).Normalized();
+			Vector3 tempRight = Vector3::Cross(Vector3::UnitY, forward).Normalized();
 			Vector3 tempUp = Vector3::Cross(forward, tempRight).Normalized();
 
-			Matrix resultMatrix{
+			cameraToWorld = 
+			{
 				{tempRight, 0},
 				{tempUp, 0},
 				{forward,0},
 				{origin, 1}
 			};
 
-			return resultMatrix;
-
-			assert(false && "Not Implemented Yet");
-			return {};
+			return cameraToWorld;
 		}
 
-		void Update(Timer* pTimer)
+		void Update(const Timer* pTimer)
 		{
 			const float deltaTime = pTimer->GetElapsed();
 
@@ -74,22 +71,30 @@ namespace dae
 			else if (pKeyboardState[SDL_SCANCODE_D])
 				origin.x += movementSpeed * deltaTime;
 
-
 			//Mouse Input
 			int mouseX{}, mouseY{};
-			const uint32_t mouseState = SDL_GetRelativeMouseState(&mouseX, &mouseY);
 
-			if (mouseState == SDL_BUTTON(1))
+			switch (SDL_GetRelativeMouseState(&mouseX, &mouseY))
 			{
-				std::cout << "LMB\n";
+			case SDL_BUTTON(1):
+				origin = forward.Normalized() * static_cast<float>(mouseY) * deltaTime;
+				totalYaw -= static_cast<float>(mouseX) * rotationSpeed * deltaTime;
+				break;
+
+			case SDL_BUTTON(3):
+				totalYaw -= static_cast<float>(mouseX) * rotationSpeed * deltaTime;
+				totalPitch -= static_cast<float>(mouseY) * rotationSpeed * deltaTime;
+				break;
+
+			case SDL_BUTTON(1) | SDL_BUTTON(3):
+				origin += up.Normalized() * static_cast<float>(mouseY) * deltaTime;
+				break;
+
+			default:;
 			}
 
-			if (mouseState == SDL_BUTTON(3))
-			{
-				std::cout << "RMB\n";
-			}
-			
-			
+			const Matrix finalRotation = { Matrix::CreateRotation(totalPitch,totalYaw,0) };
+			forward = finalRotation.TransformVector(Vector3::UnitZ).Normalized();
 
 			//todo: W2
 			//assert(false && "Not Implemented Yet");
