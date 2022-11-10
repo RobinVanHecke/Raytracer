@@ -121,8 +121,17 @@ void Renderer::RenderPixel(const Scene* pScene, const uint32_t pixelIndex, const
 
 	pScene->GetClosestHit(viewRay, closestHit);
 
-	if (closestHit.didHit)
+	if (!closestHit.didHit)
+		finalColor = colors::Black;
+
+	else
+	{
 		finalColor += materials[closestHit.materialIndex]->Shade();
+
+		for (const auto& light : lights)
+			if (pScene->DoesHit(Ray{ light.origin, light.direction,0.0001f, LightUtils::GetDirectionToLight(light, closestHit.origin).Magnitude() }))
+				finalColor *= 0.5f;
+	}
 
 	//Update Color in Buffer
 	finalColor.MaxToOne();

@@ -1,6 +1,6 @@
 #include "Scene.h"
 
-#include <iostream>
+#include <algorithm>
 
 #include "Utils.h"
 #include "Material.h"
@@ -31,9 +31,17 @@ namespace dae {
 
 	void dae::Scene::GetClosestHit(const Ray& ray, HitRecord& closestHit) const
 	{
-		//todoDone W1
-
 		HitRecord tempHitRecord;  // t is set to FLT_MAX by default
+
+		for (const auto& sphere : m_SphereGeometries)
+		{
+			GeometryUtils::HitTest_Sphere(sphere, ray, closestHit);
+
+			if (closestHit.t < tempHitRecord.t)
+				tempHitRecord = closestHit;
+			else
+				closestHit = tempHitRecord;
+		}
 
 		for (const auto& plane : m_PlaneGeometries)
 		{
@@ -44,24 +52,17 @@ namespace dae {
 			else
 				closestHit = tempHitRecord;
 		}
-
-		for (const auto &sphere : m_SphereGeometries)
-		{
-			GeometryUtils::HitTest_Sphere(sphere, ray, closestHit);
-
-			if (closestHit.t < tempHitRecord.t)
-				tempHitRecord = closestHit;
-			else
-				closestHit = tempHitRecord;
-		}
-
-		//assert(false && "No Implemented Yet!");
 	}
 
 	bool Scene::DoesHit(const Ray& ray) const
 	{
-		//todo W3
-		assert(false && "No Implemented Yet!");
+		if (std::ranges::any_of(m_SphereGeometries.begin(), m_SphereGeometries.end(), [&](const auto& sphere) {return GeometryUtils::HitTest_Sphere(sphere, ray); }))
+			return true;
+
+
+		if (std::ranges::any_of(m_PlaneGeometries.begin(), m_PlaneGeometries.end(), [&](const auto& plane) {return GeometryUtils::HitTest_Plane(plane, ray); }))
+			return true;
+
 		return false;
 	}
 
