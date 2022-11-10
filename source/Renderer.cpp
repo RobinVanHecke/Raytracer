@@ -129,17 +129,25 @@ void Renderer::RenderPixel(const Scene* pScene, const uint32_t pixelIndex, const
 		finalColor += materials[closestHit.materialIndex]->Shade();
 
 		for (const auto& light : lights)
-			if (pScene->DoesHit(Ray{ light.origin, light.direction,0.0001f, LightUtils::GetDirectionToLight(light, closestHit.origin).Magnitude() }))
+		{
+			Vector3 lightDirection{ LightUtils::GetDirectionToLight(light, closestHit.origin + closestHit.normal * 0.0001f) };
+			Vector3 normalizedLightDirection{ lightDirection.Normalized() };
+	
+			if (pScene->DoesHit(Ray{ closestHit.origin + closestHit.normal * 0.0001f, normalizedLightDirection, 0.0001f, lightDirection.Magnitude() }))
 				finalColor *= 0.5f;
+		}
 	}
 
 	//Update Color in Buffer
 	finalColor.MaxToOne();
 
-	m_pBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBuffer->format,
+	m_pBufferPixels[px + py * m_Width] = SDL_MapRGB(m_pBuffer->format,
 		static_cast<uint8_t>(finalColor.r * 255),
 		static_cast<uint8_t>(finalColor.g * 255),
 		static_cast<uint8_t>(finalColor.b * 255));
+
+
+	///////////////////////////////
 }
 
 bool Renderer::SaveBufferToImage() const

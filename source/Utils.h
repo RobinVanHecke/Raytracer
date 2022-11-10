@@ -126,8 +126,8 @@ namespace dae
 		{
 			if (light.type == LightType::Directional)
 				return Vector3{FLT_MAX, FLT_MAX, FLT_MAX};
-
-			return Vector3{ light.origin.x - origin.x, light.origin.y - origin.y,light.origin.z - origin.z };
+			
+			return { light.origin - origin };
 		}
 
 		inline ColorRGB GetRadiance(const Light& light, const Vector3& target)

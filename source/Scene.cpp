@@ -63,6 +63,9 @@ namespace dae {
 		if (std::ranges::any_of(m_PlaneGeometries.begin(), m_PlaneGeometries.end(), [&](const auto& plane) {return GeometryUtils::HitTest_Plane(plane, ray); }))
 			return true;
 
+		//if (std::ranges::any_of(m_TriangleMeshGeometries.begin(), m_TriangleMeshGeometries.end(), [&](const auto& triangle) {return GeometryUtils::HitTest_TriangleMesh(triangle, ray); }))
+		//	return true;
+
 		return false;
 	}
 
