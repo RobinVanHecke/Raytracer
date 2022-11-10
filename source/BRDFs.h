@@ -1,3 +1,5 @@
+// ReSharper disable CppClangTidyClangDiagnosticDocumentation
+// ReSharper disable CppInconsistentNaming
 #pragma once
 #include <cassert>
 #include "Math.h"
@@ -11,18 +13,14 @@ namespace dae
 		 * \param cd Diffuse Color
 		 * \return Lambert Diffuse Color
 		 */
-		static ColorRGB Lambert(float kd, const ColorRGB& cd)
+		static ColorRGB Lambert(const float kd, const ColorRGB& cd)
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			return cd * kd / PI;
 		}
 
 		static ColorRGB Lambert(const ColorRGB& kd, const ColorRGB& cd)
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			return cd * kd / PI;
 		}
 
 		/**
@@ -34,11 +32,13 @@ namespace dae
 		 * \param n Normal of the Surface
 		 * \return Phong Specular Color
 		 */
-		static ColorRGB Phong(float ks, float exp, const Vector3& l, const Vector3& v, const Vector3& n)
+		static ColorRGB Phong(const float ks, const float exp, const Vector3& l, const Vector3& v, const Vector3& n)
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			const Vector3 reflect{ l - 2 * (Vector3::Dot(n,l)) * n };
+			const float alpha = Vector3::Dot(reflect, v);
+			const float phongValue{ ks * powf(alpha, exp) };
+
+			return { phongValue,phongValue,phongValue };
 		}
 
 		/**
@@ -50,9 +50,7 @@ namespace dae
 		 */
 		static ColorRGB FresnelFunction_Schlick(const Vector3& h, const Vector3& v, const ColorRGB& f0)
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			return f0 + (ColorRGB(1, 1, 1) - f0) * std::powf(1 - Vector3::Dot(h, v), 5);
 		}
 
 		/**
@@ -62,11 +60,12 @@ namespace dae
 		 * \param roughness Roughness of the material
 		 * \return BRDF Normal Distribution Term using Trowbridge-Reitz GGX
 		 */
-		static float NormalDistribution_GGX(const Vector3& n, const Vector3& h, float roughness)
+		static float NormalDistribution_GGX(const Vector3& n, const Vector3& h, const float roughness)
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			const float a = Square(roughness);
+			const float a2 = Square(a);
+
+			return a2 / (PI * Square(Square(Vector3::Dot(n, h)) * (a2 - 1) + 1));
 		}
 
 
@@ -77,11 +76,12 @@ namespace dae
 		 * \param roughness Roughness of the material
 		 * \return BRDF Geometry Term using SchlickGGX
 		 */
-		static float GeometryFunction_SchlickGGX(const Vector3& n, const Vector3& v, float roughness)
+		static float GeometryFunction_SchlickGGX(const Vector3& n, const Vector3& v, const float roughness)
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			const float k{ Square(Square(roughness) + 1) / 8 };
+			const float dotProduct{ Vector3::Dot(n, v) };
+
+			return dotProduct / (dotProduct * (1 - k) + k);
 		}
 
 		/**
@@ -92,11 +92,9 @@ namespace dae
 		 * \param roughness Roughness of the material
 		 * \return BRDF Geometry Term using Smith (> SchlickGGX(n,v,roughness) * SchlickGGX(n,l,roughness))
 		 */
-		static float GeometryFunction_Smith(const Vector3& n, const Vector3& v, const Vector3& l, float roughness)
+		static float GeometryFunction_Smith(const Vector3& n, const Vector3& v, const Vector3& l, const float roughness)
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			return GeometryFunction_SchlickGGX(n, v, roughness) * GeometryFunction_SchlickGGX(n, l, roughness);
 		}
 
 	}

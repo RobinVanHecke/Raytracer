@@ -126,31 +126,64 @@ void Renderer::RenderPixel(const Scene* pScene, const uint32_t pixelIndex, const
 
 	else
 	{
-		finalColor += materials[closestHit.materialIndex]->Shade();
-
 		for (const auto& light : lights)
 		{
-			Vector3 lightDirection{ LightUtils::GetDirectionToLight(light, closestHit.origin + closestHit.normal * 0.0001f) };
-			Vector3 normalizedLightDirection{ lightDirection.Normalized() };
-	
-			if (pScene->DoesHit(Ray{ closestHit.origin + closestHit.normal * 0.0001f, normalizedLightDirection, 0.0001f, lightDirection.Magnitude() }))
-				finalColor *= 0.5f;
+			Vector3 lightDir{ LightUtils::GetDirectionToLight(light, closestHit.origin + (closestHit.normal * 0.0001f)) };
+			Vector3 normalizedLightDir{ lightDir.Normalized() };
+
+			Ray lightRay{ closestHit.origin + (closestHit.normal * 0.0001f),normalizedLightDir,0.0001f, lightDir.Magnitude() };
+
+			const float observedArea{ Vector3::Dot(closestHit.normal,normalizedLightDir) };
+			if (observedArea < 0)
+				continue;
+
+			if (m_ShadowsEnabled)
+				if (pScene->DoesHit(lightRay))
+					continue;
+
+			switch (m_CurrentLightingMode)
+			{
+			case LightingMode::ObservedArea:
+				finalColor += {observedArea, observedArea, observedArea};
+				break;
+
+			case LightingMode::Radiance:
+				finalColor += LightUtils::GetRadiance(light, closestHit.origin);
+				break;
+
+			case LightingMode::BRDF:
+				finalColor += materials[closestHit.materialIndex]->Shade(closestHit, normalizedLightDir, -camera.forward);
+				break;
+
+			case LightingMode::Combined:
+				finalColor += LightUtils::GetRadiance(light, closestHit.origin) * observedArea * materials[closestHit.materialIndex]->Shade(closestHit, normalizedLightDir, -camera.forward);
+				break;
+			}
 		}
 	}
-
 	//Update Color in Buffer
 	finalColor.MaxToOne();
 
-	m_pBufferPixels[px + py * m_Width] = SDL_MapRGB(m_pBuffer->format,
+	m_pBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBuffer->format,
 		static_cast<uint8_t>(finalColor.r * 255),
 		static_cast<uint8_t>(finalColor.g * 255),
 		static_cast<uint8_t>(finalColor.b * 255));
-
-
-	///////////////////////////////
 }
 
 bool Renderer::SaveBufferToImage() const
 {
 	return SDL_SaveBMP(m_pBuffer, "RayTracing_Buffer.bmp");
+}
+
+void Renderer::CycleLightingMode()
+{
+	if (m_CurrentLightingMode == LightingMode::Combined)
+	{
+		m_CurrentLightingMode = LightingMode::ObservedArea;
+		return;
+	}
+
+	int temp = static_cast<int>(m_CurrentLightingMode);
+	++temp;
+	m_CurrentLightingMode = static_cast<LightingMode>(temp);
 }

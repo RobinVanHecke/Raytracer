@@ -11,42 +11,66 @@ namespace dae
 	{
 #pragma region Sphere HitTest
 		//SPHERE HIT-TESTS
-		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, const bool ignoreHitRecord = false)
+
+		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			const Vector3 sphereToRay = ray.origin - sphere.origin;
 
 			const float a = Vector3::Dot(ray.direction, ray.direction);
-			const float b = 2.f * Vector3::Dot(ray.direction, sphereToRay);
-			const float c = Vector3::Dot(sphereToRay, sphereToRay) - sphere.radius * sphere.radius;
+			const float b = 2.0f * Vector3::Dot(ray.direction, sphereToRay);
+			const float c = Vector3::Dot(sphereToRay, sphereToRay) - Square(sphere.radius);
 
-			if (const float discriminant = b * b - 4.f * a * c; discriminant >= 0)
+			const float discriminant = Square(b) - 4.0f * a * c;
+
+			float t0, t1;
+
+			if (discriminant < 0) 
+				return false;
+
+			if (discriminant > 0)
 			{
-				if (!ignoreHitRecord)
-				{
-					const float t0 = (-b - sqrt(discriminant)) / (2.f * a);
-					const float t1 = (-b + sqrt(discriminant)) / (2.f * a);
+				float q;
 
-					if (t0 >= ray.min && t0 <= ray.max)
-					{
-						hitRecord.origin = ray.origin + ray.direction * t0;
-						hitRecord.normal = Vector3{ (hitRecord.origin - sphere.origin) / sphere.radius };
-						hitRecord.t = t0;
-						hitRecord.didHit = true;
-						hitRecord.materialIndex = sphere.materialIndex;
-					}
+				if (b > 0)
+					q = -0.5f * (b + sqrt(discriminant));
+				else
+					q = -0.5f * (b - sqrt(discriminant));
 
-					else if (t0 < ray.min)
-					{
-						hitRecord.origin = ray.origin + ray.direction * t1;
-						hitRecord.normal = Vector3{ (hitRecord.origin - sphere.origin) / sphere.radius };
-						hitRecord.t = t1;
-						hitRecord.didHit = true;
-						hitRecord.materialIndex = sphere.materialIndex;
-					}
-				}
+				t0 = q / a;
+				t1 = c / q;
+			}
+
+			else
+				t0 = t1 = -0.5f * b / a;
+
+			//ensures that the smallest value is always used
+			if (t0 > t1) 
+				std::swap(t0, t1);
+
+			else if (t0 < 0) 
+			{
+				t0 = t1;  //if t0 is negative, let's use t1 instead
+
+				if (t0 < 0) 
+					return false;  //both t0 and t1 are negative 
+			}
+
+			const float t = t0;
+
+			if (t < ray.min || t > ray.max)
+				return false;
+
+			if (!ignoreHitRecord)
+			{
+				hitRecord.origin = ray.origin + ray.direction * t;
+				hitRecord.didHit = true;
+				hitRecord.t = t;
+				hitRecord.materialIndex = sphere.materialIndex;
+				hitRecord.normal = Vector3{ (hitRecord.origin - sphere.origin).Normalized() };
 				return true;
 			}
-			return false;
+
+			return true;
 		}
 
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray)
@@ -59,13 +83,14 @@ namespace dae
 		//PLANE HIT-TESTS
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray, HitRecord& hitRecord, const bool ignoreHitRecord = false)
 		{
-			//todoDone W1
-
-			const float nominator{ Vector3::Dot(plane.origin - ray.origin, plane.normal) };
+			const float nominator{ Vector3::Dot(plane.origin - ray.origin, plane.normal.Normalized()) };
 			const float denominator{ Vector3::Dot(ray.direction, plane.normal) };
 			const float t{ nominator / denominator };
 
-			if (constexpr float epsilon{ 0.000001f }; t > epsilon)
+			if (t < ray.min || t > ray.max)
+				return false;
+
+			if (constexpr float epsilon{ FLT_EPSILON }; t > epsilon)
 			{
 				if (!ignoreHitRecord)
 				{
@@ -74,11 +99,9 @@ namespace dae
 					hitRecord.t = t;
 					hitRecord.didHit = true;
 					hitRecord.materialIndex = plane.materialIndex;
+					return true;
 				}
-				return true;
 			}
-
-			//assert(false && "No Implemented Yet!");
 			return false;
 		}
 
@@ -103,19 +126,6 @@ namespace dae
 			return HitTest_Triangle(triangle, ray, temp, true);
 		}
 #pragma endregion
-#pragma region TriangeMesh HitTest
-		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
-		{
-			//todo W5
-			assert(false && "No Implemented Yet!");
-			return false;
-		}
-
-		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray)
-		{
-			HitRecord temp{};
-			return HitTest_TriangleMesh(mesh, ray, temp, true);
-		}
 #pragma endregion
 	}
 
@@ -132,9 +142,12 @@ namespace dae
 
 		inline ColorRGB GetRadiance(const Light& light, const Vector3& target)
 		{
-			//todo W3
-			assert(false && "No Implemented Yet!");
-			return {};
+			const Vector3 pointToShade{ light.origin - target };
+
+			if (light.type == LightType::Point)
+				return { light.color * light.intensity / Vector3::Dot(pointToShade, pointToShade) };
+
+			return{ light.color * light.intensity };
 		}
 	}
 

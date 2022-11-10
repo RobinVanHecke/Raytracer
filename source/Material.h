@@ -1,3 +1,4 @@
+// ReSharper disable CppInconsistentNaming
 #pragma once
 #include "Math.h"
 #include "DataTypes.h"
@@ -59,9 +60,7 @@ namespace dae
 
 		ColorRGB Shade(const HitRecord& hitRecord = {}, const Vector3& l = {}, const Vector3& v = {}) override
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			return BRDF::Lambert(m_DiffuseReflectance, m_DiffuseColor);
 		}
 
 	private:
@@ -84,9 +83,7 @@ namespace dae
 
 		ColorRGB Shade(const HitRecord& hitRecord = {}, const Vector3& l = {}, const Vector3& v = {}) override
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			return BRDF::Lambert(m_DiffuseReflectance, m_DiffuseColor) + BRDF::Phong(m_SpecularReflectance, m_PhongExponent, l, -v, hitRecord.normal);
 		}
 
 	private:
@@ -109,9 +106,29 @@ namespace dae
 
 		ColorRGB Shade(const HitRecord& hitRecord = {}, const Vector3& l = {}, const Vector3& v = {}) override
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			ColorRGB f0{ 0.04f, 0.04f, 0.04f };
+			const Vector3 h{ (v + l) / (v + l).Magnitude() };
+			ColorRGB kd{ ColorRGB(1.f,1.f,1.f) - BRDF::FresnelFunction_Schlick(h, v, f0) };
+
+			if (m_Metalness != 0.f)
+			{
+				f0 = m_Albedo;
+				kd = ColorRGB(0.f, 0.f, 0.f);
+			}
+
+			const ColorRGB F = BRDF::FresnelFunction_Schlick(h.Normalized(), v.Normalized(), f0);
+			const float D = BRDF::NormalDistribution_GGX(hitRecord.normal, h.Normalized(), m_Roughness);
+			const float G = BRDF::GeometryFunction_Smith(hitRecord.normal, v.Normalized(), l.Normalized(), m_Roughness);
+
+
+			ColorRGB DFG{ D * F * G };
+			const float denominator{ 4 * (Vector3::Dot(v,hitRecord.normal) * Vector3::Dot(l,hitRecord.normal)) };
+
+			const ColorRGB specular{ DFG / denominator };
+
+			const ColorRGB diffuse{ BRDF::Lambert(kd,m_Albedo) };
+
+			return kd * diffuse + specular;
 		}
 
 	private:

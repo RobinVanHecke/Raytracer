@@ -38,8 +38,6 @@ namespace dae
 
 		Matrix CalculateCameraToWorld()
 		{
-			//todoDone: W2
-
 			Vector3 tempRight = Vector3::Cross(Vector3::UnitY, forward).Normalized();
 			Vector3 tempUp = Vector3::Cross(forward, tempRight).Normalized();
 
@@ -95,9 +93,6 @@ namespace dae
 
 			const Matrix finalRotation = { Matrix::CreateRotation(totalPitch,totalYaw,0) };
 			forward = finalRotation.TransformVector(Vector3::UnitZ).Normalized();
-
-			//todo: W2
-			//assert(false && "Not Implemented Yet");
 		}
 	};
 }
