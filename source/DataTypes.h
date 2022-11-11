@@ -1,6 +1,7 @@
 // ReSharper disable CppInconsistentNaming
 #pragma once
 #include <cassert>
+#include <iostream>
 
 #include "Math.h"
 #include "vector"
@@ -141,37 +142,44 @@ namespace dae
 
 		void UpdateTransforms()
 		{
+			transformedPositions.clear();
+			transformedNormals.clear();
+
 			//Calculate Final Transform 
 			//const auto finalTransform = ...
 
-			const auto finalTransform{ scaleTransform * rotationTransform * translationTransform };
-		//	const auto finalTransform{ scaleTransform * translationTransform * translationTransform };
+			//const auto finalTransform{ scaleTransform * rotationTransform * translationTransform };
+			//const auto finalTransform{ scaleTransform * translationTransform * rotationTransform };
 
-		//	const auto finalTransform{ translationTransform * rotationTransform * scaleTransform };
-		//	const auto finalTransform{ translationTransform * scaleTransform * rotationTransform };
+			const auto finalTransform{ translationTransform * rotationTransform * scaleTransform };
+			//const auto finalTransform{ translationTransform * scaleTransform * rotationTransform };
 
-		//	const auto finalTransform{ rotationTransform * translationTransform * scaleTransform };
-		//	const auto finalTransform{ rotationTransform * scaleTransform * translationTransform };
+			//const auto finalTransform{ rotationTransform * translationTransform * scaleTransform };
+			//const auto finalTransform{ rotationTransform * scaleTransform * translationTransform };
 
 			//Transform Positions (positions > transformedPositions)
 			//...
-			
-			for (auto& position : positions)
-				transformedPositions.emplace_back(finalTransform.TransformPoint(position));
+			transformedPositions.reserve(positions.size());
+
+			if (transformedPositions.size() < positions.size())
+				for (const auto& position : positions)
+					transformedPositions.emplace_back(finalTransform.TransformPoint(position));
 
 			// Update AABB
 			UpdateTransformedAABB(finalTransform);
 
+
+			transformedNormals.reserve(normals.size());
 			//Transform Normals (normals > transformedNormals)
 			//...
-
-			for (auto& normal : normals)
-				transformedNormals.emplace_back(finalTransform.TransformVector(normal));
+			if (transformedNormals.size() < normals.size())
+				for (const auto& normal : normals)
+					transformedNormals.emplace_back(rotationTransform.TransformVector(normal));
 		}
 
 		void UpdateAABB()
 		{
-			if (!positions.empty()) // positions.size() > 0
+			if (!positions.empty())
 			{
 				minAABB = positions[0];
 				maxAABB = positions[0];

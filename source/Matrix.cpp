@@ -104,11 +104,11 @@ namespace dae {
 
 	Matrix Matrix::CreateTranslation(float x, float y, float z)
 	{
-		return{
-			{1,0,0,x},
-			{0,1,0,y},
-			{0 ,1,0,z},
-			{0,0,0,1}
+		return {
+			Vector4{1, 0, 0, x},
+			Vector4{0, 1, 0, y},
+			Vector4{0, 0, 1, z},
+			Vector4{0, 0, 0, 1}
 		};
 	}
 
@@ -159,11 +159,11 @@ namespace dae {
 
 	Matrix Matrix::CreateScale(float sx, float sy, float sz)
 	{
-		return{
-			{sx,0,0,0},
-			{0,sy,0,0},
-			{0 ,0,sz,0},
-			{0,0,0,1}
+		return {
+			Vector4{sx, 0, 0, 0},
+			Vector4{0, sy, 0, 0},
+			Vector4{0, 0, sz, 0},
+			Vector4{0, 0, 0, 1}
 		};
 	}
 
