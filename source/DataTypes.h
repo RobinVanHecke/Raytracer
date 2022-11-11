@@ -125,8 +125,8 @@ namespace dae
 		{
 			for (size_t i = 0; i < indices.size(); i += 3)
 			{
-				Vector3 a{ positions[i - 1] - positions[i - 2] };
-				Vector3 b{ positions[i] - positions[i - 2] };
+				Vector3 a{ positions[indices[i + 1]] - positions[indices[i]] };
+				Vector3 b{ positions[indices[i + 2]] - positions[indices[i]] };
 
 				normals.emplace_back(Vector3::Cross(a, b));
 			}
@@ -137,31 +137,21 @@ namespace dae
 			//Calculate Final Transform 
 			//const auto finalTransform = ...
 
+			const auto finalTransform{ scaleTransform * rotationTransform * translationTransform };
+
 			//Transform Positions (positions > transformedPositions)
 			//...
 
 			if (positions.size() > transformedPositions.size())
-			{
 				for (auto position : positions)
-				{
-					Translate(position);
-					RotateY(position.y);
-					Scale(position);
-				}
-			}
+					transformedPositions.emplace_back(finalTransform.TransformPoint(position));
 
 			//Transform Normals (normals > transformedNormals)
 			//...
 
 			if (normals.size() > transformedNormals.size())
-			{
 				for (auto normal : normals)
-				{
-					Translate(normal);
-					RotateY(normal.y);
-					Scale(normal);
-				}
-			}
+					transformedNormals.emplace_back(finalTransform.TransformVector(normal));
 		}
 	};
 #pragma endregion

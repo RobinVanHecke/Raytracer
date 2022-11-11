@@ -54,9 +54,9 @@ namespace dae {
 				closestHit = tempHitRecord;
 		}
 
-		for (const auto& triangle : m_TriangleMeshGeometries)
+		for (const auto& triangleMesh : m_TriangleMeshGeometries)
 		{
-			GeometryUtils::HitTest_Triangle(triangle, ray, closestHit);
+			GeometryUtils::HitTest_TriangleMesh(triangleMesh, ray, closestHit);
 
 			if (closestHit.t < tempHitRecord.t)
 				tempHitRecord = closestHit;
@@ -73,7 +73,7 @@ namespace dae {
 		if (std::ranges::any_of(m_PlaneGeometries.begin(), m_PlaneGeometries.end(), [&](const auto& plane) {return GeometryUtils::HitTest_Plane(plane, ray); }))
 			return true;
 
-		if (std::ranges::any_of(m_TriangleMeshGeometries.begin(), m_TriangleMeshGeometries.end(), [&](const auto& triangle) {return GeometryUtils::HitTest_Triangle(triangle, ray); }))
+		if (std::ranges::any_of(m_TriangleMeshGeometries.begin(), m_TriangleMeshGeometries.end(), [&](const auto& triangleMesh) {return GeometryUtils::HitTest_TriangleMesh(triangleMesh, ray); }))
 			return true;
 
 		return false;
@@ -271,9 +271,13 @@ namespace dae {
 		triangleMesh->positions = { {-.75f,-1.f,.0f},{-.75f,1.f,.0f},{.75f,-1.f,1.f}, {.75f,-1.f,.0f} };
 		triangleMesh->indices = {
 			0,1,2,			// triangle 1
-			0,2,3 };		// triangle 2
+			0,2,3, };		// triangle 2
 
 		triangleMesh->CalculateNormals();
+
+		//triangleMesh->Translate({ 0.f,1.5f,0.f });
+		//triangleMesh->RotateY(45);
+
 		triangleMesh->UpdateTransforms();
 
 		/*//Spheres
