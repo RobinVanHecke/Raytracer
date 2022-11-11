@@ -120,28 +120,29 @@ namespace dae
 			case TriangleCullMode::BackFaceCulling:
 				if (ignoreHitRecord)
 				{
+					if (Vector3::Dot(triangle.normal, ray.direction) < 0)
+						return false;
+				}
+				else if (!ignoreHitRecord)
+				{
 					if (Vector3::Dot(triangle.normal, ray.direction) > 0)
 						return false;
 				}
-				else
-				{
-					if (Vector3::Dot(triangle.normal, ray.direction)< 0)
-						return false;
-				}
-					
-				
+				break;
+
 
 			case TriangleCullMode::FrontFaceCulling:
 				if (ignoreHitRecord)
 				{
-					if (Vector3::Dot(triangle.normal, ray.direction) < 0)
-						return false;
-				}
-				else
-				{
 					if (Vector3::Dot(triangle.normal, ray.direction) > 0)
 						return false;
 				}
+				else if (!ignoreHitRecord)
+				{
+					if (Vector3::Dot(triangle.normal, ray.direction) < 0)
+						return false;
+				}
+				break;
 
 			case TriangleCullMode::NoCulling:
 				break;
@@ -154,7 +155,7 @@ namespace dae
 
 			const Vector3 l{ center - ray.origin };
 
-			const float t{ Vector3::Dot(l,triangle.normal) / Vector3::Dot(ray.direction,triangle.normal) };
+			const float t{ Vector3::Dot(l, triangle.normal) / Vector3::Dot(ray.direction, triangle.normal) };
 
 			if (t < ray.min || t > ray.max)
 				return false;
@@ -162,8 +163,8 @@ namespace dae
 			Vector3 p{ ray.origin + t * ray.direction };
 
 			const Vector3 edgeA{ triangle.v1 - triangle.v0 };
-			const Vector3 edgeB{ triangle.v2 - triangle.v0 };
-			const Vector3 edgeC{ triangle.v2 - triangle.v1 };
+			const Vector3 edgeB{ triangle.v2 - triangle.v1 };
+			const Vector3 edgeC{ triangle.v0 - triangle.v2 };
 
 			const Vector3 pointToSideA{ p - triangle.v0 };
 			const Vector3 pointToSideB{ p - triangle.v1 };
@@ -197,6 +198,94 @@ namespace dae
 		{
 			HitRecord temp{};
 			return HitTest_Triangle(triangle, ray, temp, true);
+		}
+
+
+		inline bool HitTest_TriangleMesh(const TriangleMesh& triangle, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
+		{
+			switch (triangle.cullMode)
+			{
+			case TriangleCullMode::BackFaceCulling:
+				if (ignoreHitRecord)
+				{
+					if (Vector3::Dot(triangle.normal, ray.direction) < 0)
+						return false;
+				}
+				else if (!ignoreHitRecord)
+				{
+					if (Vector3::Dot(triangle.normal, ray.direction) > 0)
+						return false;
+				}
+				break;
+
+
+			case TriangleCullMode::FrontFaceCulling:
+				if (ignoreHitRecord)
+				{
+					if (Vector3::Dot(triangle.normal, ray.direction) > 0)
+						return false;
+				}
+				else if (!ignoreHitRecord)
+				{
+					if (Vector3::Dot(triangle.normal, ray.direction) < 0)
+						return false;
+				}
+				break;
+
+			case TriangleCullMode::NoCulling:
+				break;
+			}
+
+			if (Vector3::Dot(triangle.normal, ray.direction) == 0.f)
+				return false;
+
+			const Vector3 center{ (triangle.v0 + triangle.v1 + triangle.v2) / 3 };
+
+			const Vector3 l{ center - ray.origin };
+
+			const float t{ Vector3::Dot(l, triangle.normal) / Vector3::Dot(ray.direction, triangle.normal) };
+
+			if (t < ray.min || t > ray.max)
+				return false;
+
+			Vector3 p{ ray.origin + t * ray.direction };
+
+			const Vector3 edgeA{ triangle.v1 - triangle.v0 };
+			const Vector3 edgeB{ triangle.v2 - triangle.v1 };
+			const Vector3 edgeC{ triangle.v0 - triangle.v2 };
+
+			const Vector3 pointToSideA{ p - triangle.v0 };
+			const Vector3 pointToSideB{ p - triangle.v1 };
+			const Vector3 pointToSideC{ p - triangle.v2 };
+
+			if (Vector3::Dot(triangle.normal, Vector3::Cross(edgeA, pointToSideA)) < 0)
+				return false;
+
+			if (Vector3::Dot(triangle.normal, Vector3::Cross(edgeB, pointToSideB)) < 0)
+				return false;
+
+			if (Vector3::Dot(triangle.normal, Vector3::Cross(edgeC, pointToSideC)) < 0)
+				return false;
+
+
+			if (!ignoreHitRecord)
+			{
+				hitRecord.origin = ray.origin + ray.direction * t;
+				hitRecord.normal = triangle.normal;
+				hitRecord.t = t;
+				hitRecord.didHit = true;
+				hitRecord.materialIndex = triangle.materialIndex;
+				return true;
+			}
+
+			return true;
+
+		}
+
+		inline bool HitTest_TriangleMesh(const TriangleMesh& triangle, const Ray& ray)
+		{
+			HitRecord temp{};
+			return HitTest_TriangleMesh(triangle, ray, temp, true);
 		}
 #pragma endregion
 #pragma endregion

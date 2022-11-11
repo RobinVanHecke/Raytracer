@@ -54,7 +54,7 @@ namespace dae {
 				closestHit = tempHitRecord;
 		}
 
-		for (const auto& triangle : m_Triangles)
+		for (const auto& triangle : m_TriangleMeshGeometries)
 		{
 			GeometryUtils::HitTest_Triangle(triangle, ray, closestHit);
 
@@ -63,16 +63,6 @@ namespace dae {
 			else
 				closestHit = tempHitRecord;
 		}
-
-		/*for (const auto& triangle : m_TriangleMeshGeometries)
-		{
-			GeometryUtils::HitTest_Triangle(triangle, ray, closestHit);
-
-			if (closestHit.t < tempHitRecord.t)
-				tempHitRecord = closestHit;
-			else
-				closestHit = tempHitRecord;
-		}*/
 	}
 
 	bool Scene::DoesHit(const Ray& ray) const
@@ -83,11 +73,8 @@ namespace dae {
 		if (std::ranges::any_of(m_PlaneGeometries.begin(), m_PlaneGeometries.end(), [&](const auto& plane) {return GeometryUtils::HitTest_Plane(plane, ray); }))
 			return true;
 
-		if (std::ranges::any_of(m_Triangles.begin(), m_Triangles.end(), [&](const auto& triangle) {return GeometryUtils::HitTest_Triangle(triangle, ray); }))
+		if (std::ranges::any_of(m_TriangleMeshGeometries.begin(), m_TriangleMeshGeometries.end(), [&](const auto& triangle) {return GeometryUtils::HitTest_Triangle(triangle, ray); }))
 			return true;
-
-		//if (std::ranges::any_of(m_TriangleMeshGeometries.begin(), m_TriangleMeshGeometries.end(), [&](const auto& triangle) {return GeometryUtils::HitTest_Triangle(triangle, ray); }))
-		//	return true;
 
 		return false;
 	}
@@ -279,12 +266,15 @@ namespace dae {
 		AddPlane({ 5.0f,.0f,.0f }, { -1.f,0.f,0.f }, matLambert_GrayBlue); //Right
 		AddPlane({ -5.0f,.0f,.0f }, { 1.f,0.f,0.f }, matLambert_GrayBlue); //Left
 
-		//Triangle (Temp)
-		auto triangle = Triangle{ {-.75f,.5f,.0f},{-.75f,2.f,.0f},{.75f,.5f,.0f} };
-		triangle.cullMode = TriangleCullMode::NoCulling;
-		triangle.materialIndex = matLambert_White;
+		// Triangle Mesh
+		const auto triangleMesh = AddTriangleMesh(TriangleCullMode::NoCulling, matLambert_White);
+		triangleMesh->positions = { {-.75f,-1.f,.0f},{-.75f,1.f,.0f},{.75f,-1.f,1.f}, {.75f,-1.f,.0f} };
+		triangleMesh->indices = {
+			0,1,2,			// triangle 1
+			0,2,3 };		// triangle 2
 
-		m_Triangles.emplace_back(triangle);
+		triangleMesh->CalculateNormals();
+		triangleMesh->UpdateTransforms();
 
 		/*//Spheres
 		//bottom row
