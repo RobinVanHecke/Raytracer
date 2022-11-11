@@ -1,3 +1,4 @@
+// ReSharper disable CppInconsistentNaming
 #pragma once
 #include <cassert>
 
@@ -84,6 +85,12 @@ namespace dae
 		Matrix translationTransform{};
 		Matrix scaleTransform{};
 
+		Vector3 minAABB;
+		Vector3 maxAABB;
+
+		Vector3 transformedMinAABB;
+		Vector3 transformedMaxAABB;
+
 		std::vector<Vector3> transformedPositions{};
 		std::vector<Vector3> transformedNormals{};
 
@@ -128,7 +135,7 @@ namespace dae
 				Vector3 a{ positions[indices[i + 1]] - positions[indices[i]] };
 				Vector3 b{ positions[indices[i + 2]] - positions[indices[i]] };
 
-				normals.emplace_back(Vector3::Cross(a, b));
+				normals.emplace_back(Vector3::Cross(a, b).Normalized());
 			}
 		}
 
@@ -138,20 +145,90 @@ namespace dae
 			//const auto finalTransform = ...
 
 			const auto finalTransform{ scaleTransform * rotationTransform * translationTransform };
+		//	const auto finalTransform{ scaleTransform * translationTransform * translationTransform };
+
+		//	const auto finalTransform{ translationTransform * rotationTransform * scaleTransform };
+		//	const auto finalTransform{ translationTransform * scaleTransform * rotationTransform };
+
+		//	const auto finalTransform{ rotationTransform * translationTransform * scaleTransform };
+		//	const auto finalTransform{ rotationTransform * scaleTransform * translationTransform };
 
 			//Transform Positions (positions > transformedPositions)
 			//...
+			
+			for (auto& position : positions)
+				transformedPositions.emplace_back(finalTransform.TransformPoint(position));
 
-			if (positions.size() > transformedPositions.size())
-				for (auto position : positions)
-					transformedPositions.emplace_back(finalTransform.TransformPoint(position));
+			// Update AABB
+			UpdateTransformedAABB(finalTransform);
 
 			//Transform Normals (normals > transformedNormals)
 			//...
 
-			if (normals.size() > transformedNormals.size())
-				for (auto normal : normals)
-					transformedNormals.emplace_back(finalTransform.TransformVector(normal));
+			for (auto& normal : normals)
+				transformedNormals.emplace_back(finalTransform.TransformVector(normal));
+		}
+
+		void UpdateAABB()
+		{
+			if (!positions.empty()) // positions.size() > 0
+			{
+				minAABB = positions[0];
+				maxAABB = positions[0];
+
+				for (auto& p : positions)
+				{
+					minAABB = Vector3::Min(p, minAABB);
+					maxAABB = Vector3::Max(p, maxAABB);
+				}
+			}
+		}
+
+		void UpdateTransformedAABB(const Matrix& finalTransform)
+		{
+			// AABB Update: be careful -> transform the 8 vertices of the aabb
+			// and calculate new min and max
+
+			Vector3 tMinAABB = finalTransform.TransformPoint(minAABB);
+			Vector3 tMaxAABB = tMinAABB;
+
+			// (xmax,ymin,zmin)
+			Vector3 tAABB = finalTransform.TransformPoint(maxAABB.x, minAABB.y, minAABB.z);
+			tMinAABB = Vector3::Min(tAABB, tMinAABB);
+			tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
+
+			// (xmax,ymin,zmax)
+			tAABB = finalTransform.TransformPoint(maxAABB.x, minAABB.y, maxAABB.z);
+			tMinAABB = Vector3::Min(tAABB, tMinAABB);
+			tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
+
+			// (xmin,ymin,zmax)
+			tAABB = finalTransform.TransformPoint(minAABB.x, minAABB.y, maxAABB.z);
+			tMinAABB = Vector3::Min(tAABB, tMinAABB);
+			tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
+
+			// (xmin,ymax,zmin)
+			tAABB = finalTransform.TransformPoint(minAABB.x, maxAABB.y, minAABB.z);
+			tMinAABB = Vector3::Min(tAABB, tMinAABB);
+			tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
+
+			// (xmax,ymax,zmin)
+			tAABB = finalTransform.TransformPoint(maxAABB.x, maxAABB.y, minAABB.z);
+			tMinAABB = Vector3::Min(tAABB, tMinAABB);
+			tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
+
+			// (xmax,ymax,zmax)
+			tAABB = finalTransform.TransformPoint(maxAABB.x, maxAABB.y, maxAABB.z);
+			tMinAABB = Vector3::Min(tAABB, tMinAABB);
+			tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
+
+			// (xmin,ymax,zmax)
+			tAABB = finalTransform.TransformPoint(minAABB.x, maxAABB.y, maxAABB.z);
+			tMinAABB = Vector3::Min(tAABB, tMinAABB);
+			tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
+
+			transformedMinAABB = tMinAABB;
+			transformedMaxAABB = tMaxAABB;
 		}
 	};
 #pragma endregion

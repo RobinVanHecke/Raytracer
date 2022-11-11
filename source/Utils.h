@@ -112,6 +112,32 @@ namespace dae
 		}
 #pragma endregion
 #pragma region Triangle HitTest
+		inline bool SlabTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray)
+		{
+			// x
+			const float tx1 = (mesh.transformedMinAABB.x - ray.origin.x) / ray.direction.x;
+			const float tx2 = (mesh.transformedMaxAABB.x - ray.origin.x) / ray.direction.x;
+
+			float tmin = std::min(tx1, tx2);
+			float tmax = std::max(tx1, tx2);
+
+			// y
+			const float ty1 = (mesh.transformedMinAABB.y - ray.origin.y) / ray.direction.y;
+			const float ty2 = (mesh.transformedMaxAABB.y - ray.origin.y) / ray.direction.y;
+
+			tmin = std::min(tmin, std::min(ty1, ty2));
+			tmax = std::max(tmax, std::max(ty1, ty2));
+
+			// z
+			const float tz1 = (mesh.transformedMinAABB.z - ray.origin.z) / ray.direction.z;
+			const float tz2 = (mesh.transformedMaxAABB.z - ray.origin.z) / ray.direction.z;
+
+			tmin = std::min(tmin, std::min(tz1, tz2));
+			tmax = std::max(tmax, std::max(tz1, tz2));
+
+			return tmax > 0 && tmax >= tmin;
+		}
+
 		//TRIANGLE HIT-TESTS
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
@@ -188,7 +214,6 @@ namespace dae
 			}
 
 			return true;
-			
 		}
 
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray)
@@ -200,14 +225,23 @@ namespace dae
 
 		inline bool HitTest_TriangleMesh(const TriangleMesh& triangleMesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
+			//slabtest
+			if (!SlabTest_TriangleMesh)
+				return false;
+
+			Triangle triangle{};
 
 			for (size_t i = 0; i < triangleMesh.indices.size(); i += 3)
 			{
-				const Vector3 pointA{ triangleMesh.transformedPositions[triangleMesh.indices[i]] };
+				/*const Vector3 pointA{ triangleMesh.transformedPositions[triangleMesh.indices[i]] };
 				const Vector3 pointB{ triangleMesh.transformedPositions[triangleMesh.indices[i + 1]] };
 				const Vector3 pointC{ triangleMesh.transformedPositions[triangleMesh.indices[i + 2]] };
 
-				Triangle triangle{ pointA, pointB, pointC };
+				Triangle triangle{ pointA, pointB, pointC };*/
+
+				triangle.v0 = triangleMesh.transformedPositions[triangleMesh.indices[i]];
+				triangle.v1 = triangleMesh.transformedPositions[triangleMesh.indices[i + 1]];
+				triangle.v2 = triangleMesh.transformedPositions[triangleMesh.indices[i + 2]];
 
 				triangle.cullMode = triangleMesh.cullMode;
 				triangle.normal = triangleMesh.normals[i / 3];
@@ -225,6 +259,8 @@ namespace dae
 			HitRecord temp{};
 			return HitTest_TriangleMesh(triangleMesh, ray, temp, true);
 		}
+
+		
 #pragma endregion
 #pragma endregion
 	}
